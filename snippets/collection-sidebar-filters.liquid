@@ -1,0 +1,59 @@
+{% if current_tags %}
+  <ul class="no-bullets tag-list">
+    {% for tag in current_tags %}
+      {%- assign tag_text = tag -%}
+      {%- assign tag_name = tag | strip -%}
+      {% if tag_name contains '_' %}
+        {%- assign cat = tag | split: '_' | first -%}
+        {%- assign tag_text = tag | remove_first: cat | remove_first: '_' -%}
+      {% endif %}
+
+      <li class="tag tag--remove">
+        {{ tag_text | link_to_remove_tag: tag_name | replace: 'title=', 'class="btn btn--small js-no-transition" title=' | replace: 'view=ajax', '' }}
+        {% include 'icon-close' %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% for block in section.blocks %}
+  {%- assign collapsed_state = block.settings.collapsed -%}
+  <div class="collection-sidebar__group--{{ block.id }}" {{ block.shopify_attributes }}>
+    {% if block.type == 'menu' %}
+      <div class="collection-sidebar__group">
+        {%- assign block_title = block.settings.title -%}
+        {% if block_title == blank %}
+          {%- assign block_title = linklists[block.settings.menu].title -%}
+        {% endif %}
+        {% include 'collection-sidebar-filter-trigger', title: block_title, index: forloop.index %}
+        <div
+          id="{{ location }}-{{ forloop.index }}"
+          class="collapsible-content collapsible-content--sidebar{% unless collapsed_state %} is-open{% endunless %}"
+          {% unless collapsed_state %}style="height: auto;"{% endunless %}>
+          <div class="collapsible-content__inner">
+            <ul class="no-bullets tag-list">
+              {% for link in linklists[block.settings.menu].links %}
+                <li {% if link.current %}class="tag--active"{% endif %}>
+                  <a href="{{ link.url }}" class="no-ajax">
+                    {{ link.title }}
+                  </a>
+                  {% if link.links %}
+                    <ul class="no-bullets tag-list">
+                      {% for childlink in link.links %}
+                        <li {% if childlink.current %}class="tag--active"{% endif %}>
+                          <a href="{{ childlink.url }}" class="no-ajax">
+                            {{ childlink.title }}
+                          </a>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endfor %}
